@@ -88,7 +88,7 @@ app.get('/api/v1/beat/:id/:name', (req, res) => {
   const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
   logger.log('server', `GET /api/v1/beat/${clientId}/${name} ${reqAddr}`)
   if (!onlineClients[clientId]) {
-    logger.log('cron', `username='${name}' joined the game`)
+    logger.log('server', `username='${name}' joined the game`)
   }
   onlineClients[clientId] = { username: name, lastSeen: new Date() }
   res.end('{}')
