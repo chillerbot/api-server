@@ -37,6 +37,8 @@ app.use(
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
+  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  logger.log('server', `GET / ${reqAddr}`)
   res.end('OK')
 })
 
@@ -46,7 +48,7 @@ app.set('trust proxy', true)
 
 app.post('/', (req, res) => {
   // const reqHost = `${req.protocol}://${req.header('Host')}`
-  // const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
   // const isOwnAddr = reqAddr === process.env.IP_ADDR
   // if (reqHost !== process.env.CAPTCHA_BACKEND && !isOwnAddr) {
   //   logger.log('captcha', `blocked post from invalid host='${reqHost}' addr='${reqAddr}' expected='${process.env.CAPTCHA_BACKEND}'`)
@@ -61,6 +63,7 @@ app.post('/', (req, res) => {
   // } else {
   //   logger.log('captcha', `result=robot ip=${req.ip}`)
   // }
+  logger.log('server', `POST / ${reqAddr}`)
   res.end('OK')
 })
 
