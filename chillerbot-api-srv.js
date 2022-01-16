@@ -4,7 +4,7 @@ const cron = require('node-cron')
 const dotenv = require('dotenv')
 dotenv.config()
 
-// const { insertPlaytime, getDb } = require('./src/database')
+const { insertPlaytime } = require('./src/database')
 const logger = require('./src/logger')
 
 const port = 9812
@@ -42,11 +42,32 @@ const onlineClients = {}
 cron.schedule('* * * * *', () => {
   logger.log('cron', `check online players ${Object.keys(onlineClients).length}`)
   for (const clientId in onlineClients) {
-    logger.log('cron', `id=${clientId} username=${onlineClients[clientId].username} lastSeen=${onlineClients[clientId].lastSeen}`)
-    const seenSecsAgo = (new Date() - onlineClients[clientId].lastSeen) / 1000
+    const client = onlineClients[clientId]
+    logger.log('cron', `id=${clientId} username=${client.username} lastSeen=${client.lastSeen}`)
+    const seenSecsAgo = (new Date() - client.lastSeen) / 1000
     if (seenSecsAgo > 60 * 3) {
-      logger.log('cron', `username='${onlineClients[clientId].username}' left the game`)
+      const playtime = Math.round((new Date() - client.firstSeen) / 1000 / 60)
+      logger.log('cron', `username='${client.username}' left the game (playtime=${playtime})`)
+      if (playtime > 0) {
+        insertPlaytime(clientId, client.username, client.ip, playtime)
+      }
       delete onlineClients[clientId]
+    }
+  }
+})
+
+cron.schedule('0 * * * *', () => {
+  // do hourly saves in case the server restarts or crashes
+  for (const clientId in onlineClients) {
+    const client = onlineClients[clientId]
+    const seenSecsAgo = (new Date() - client.lastSeen) / 1000
+    if (seenSecsAgo > 60 * 3) {
+      const playtime = Math.round((new Date() - client.firstSeen) / 1000 / 60)
+      logger.log('cron', `saving username='${client.username}' (playtime=${playtime})`)
+      if (playtime > 0) {
+        insertPlaytime(clientId, client.username, client.ip, playtime)
+      }
+      onlineClients[clientId].firstSeen = new Date()
     }
   }
 })
@@ -89,9 +110,18 @@ app.get('/api/v1/beat/:id/:name', (req, res) => {
   logger.log('server', `GET /api/v1/beat/${clientId}/${name} ${reqAddr}`)
   if (!onlineClients[clientId]) {
     logger.log('server', `username='${name}' joined the game`)
+    onlineClients[clientId] = { username: name, lastSeen: new Date(), firstSeen: new Date(), ip: reqAddr }
+  } else {
+    onlineClients[clientId].username = name
+    onlineClients[clientId].lastSeen = new Date()
   }
-  onlineClients[clientId] = { username: name, lastSeen: new Date() }
   res.end('{}')
+})
+
+app.get('/api/v1/users', (req, res) => {
+  res.end(JSON.stringify(
+    Object.keys(onlineClients).map(id => onlineClients[id].username)
+  ))
 })
 
 app.use(express.static('static'))

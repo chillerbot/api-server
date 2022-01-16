@@ -3,19 +3,22 @@ const db = new sqlite3.Database('./db/main.db')
 
 const dbQuery = `
 CREATE TABLE IF NOT EXISTS Playtime(
-  username TEXT NOT NULL PRIMARY KEY,
+  ID INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT,
+  username TEXT,
   ip TEXT,
   minutes INTEGER
 )`
 
 db.run(dbQuery)
 
-const insertPlaytime = (username, ip, minutes) => {
+const insertPlaytime = (key, username, ip, minutes) => {
   const insertQuery = `INSERT INTO Playtime(
-    username, ip, minutes
-  ) VALUES (?, ?, ?);
+    key, username, ip, minutes
+  ) VALUES (?, ?, ?, ?);
   `
   db.run(insertQuery,
+    key,
     username,
     ip,
     minutes,
