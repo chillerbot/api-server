@@ -40,7 +40,7 @@ app.set('view engine', 'ejs')
 const onlineClients = {}
 
 cron.schedule('* * * * *', () => {
-  logger.log('cron', `check online players ${Object.keys(onlineClients.length).length}`)
+  logger.log('cron', `check online players ${Object.keys(onlineClients).length}`)
   for (const clientId in onlineClients) {
     logger.log('cron', `id=${clientId} username=${onlineClients[clientId].username} lastSeen=${onlineClients[clientId].lastSeen}`)
     const seenSecsAgo = (new Date() - onlineClients[clientId].lastSeen) / 1000
