@@ -67,27 +67,12 @@ app.post('/', (req, res) => {
   res.end('OK')
 })
 
-app.get('/api/players/:player', (req, res) => {
+app.get('/api/v1/beat/:id', (req, res) => {
   res.end('OK')
-  // const player = decodeURIComponent(req.params.player)
-  // const players = []
-  // if (!process.env.PLAYER_NAMES_PATH) {
-  //   res.end('[]')
-  //   return []
-  // }
-  // if (!fs.existsSync(process.env.PLAYER_NAMES_PATH)) {
-  //   res.end('[]')
-  //   return []
-  // }
-  // fs.readFileSync(process.env.PLAYER_NAMES_PATH, 'UTF-8')
-  //   .split(/\r?\n/)
-  //   .filter(data => data.toLowerCase().includes(player.toLowerCase()))
-  //   .forEach(line => {
-  //     const data = line.trim().split(' ')
-  //     players.push([parseInt(data[0], 10), data.slice(1).join(' ').trim()])
-  //   })
-  // players.sort((p1, p2) => p2[0] - p1[0])
-  // res.send(JSON.stringify(players.map(player => player[1]).slice(0, 10)))
+  const clientId = decodeURIComponent(req.params.id)
+  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  logger.log('server', `GET /api/v1/beat/${clientId} ${reqAddr}`)
+  res.end('{}')
 })
 
 app.use(express.static('static'))
