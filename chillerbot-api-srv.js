@@ -68,7 +68,6 @@ app.post('/', (req, res) => {
 })
 
 app.get('/api/v1/beat/:id', (req, res) => {
-  res.end('OK')
   const clientId = decodeURIComponent(req.params.id)
   const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
   logger.log('server', `GET /api/v1/beat/${clientId} ${reqAddr}`)
