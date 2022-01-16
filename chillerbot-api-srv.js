@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const cron = require('node-cron')
 const dotenv = require('dotenv')
 dotenv.config()
 
@@ -35,6 +36,20 @@ app.use(
 )
 
 app.set('view engine', 'ejs')
+
+const onlineClients = {}
+
+cron.schedule('* * * * *', () => {
+  logger.log('cron', `check online players ${onlineClients.length}`)
+  for (const clientId in onlineClients) {
+    logger.log('cron', `id=${clientId} username=${onlineClients[clientId].username} lastSeen=${onlineClients[clientId].lastSeen}`)
+    const seenSecsAgo = (new Date() - onlineClients[clientId].lastSeen) / 1000
+    if (seenSecsAgo > 60 * 3) {
+      logger.log('cron', `username='${onlineClients[clientId].username}' left the game`)
+      delete onlineClients[clientId]
+    }
+  }
+})
 
 app.get('/', (req, res) => {
   const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
@@ -72,6 +87,10 @@ app.get('/api/v1/beat/:id/:name', (req, res) => {
   const name = decodeURIComponent(req.params.name)
   const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
   logger.log('server', `GET /api/v1/beat/${clientId}/${name} ${reqAddr}`)
+  if (!onlineClients[clientId]) {
+    logger.log('cron', `username='${name}' joined the game`)
+  }
+  onlineClients[clientId] = { username: name, lastSeen: new Date() }
   res.end('{}')
 })
 
