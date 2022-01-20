@@ -108,7 +108,7 @@ app.get('/api/v1/beat/:id/:client/:name', (req, res) => {
   const name = decodeURIComponent(req.params.name)
   const client = decodeURIComponent(req.params.client)
   const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-  logger.log('server', `GET /api/v1/beat/${clientId}/${name} ${reqAddr}`)
+  logger.log('server', `GET /api/v1/beat/${clientId}/${client}/${name} ${reqAddr}`)
   if (!onlineClients[clientId]) {
     logger.log('server', `username='${name}' joined the game (client=${client})`)
     onlineClients[clientId] = {
