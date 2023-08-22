@@ -7,7 +7,9 @@
         "standard": "*"
     },
     "scripts": {
-        "test": "npx standard",
+        "lint": "npx standard",
+        "test": "node test/test.js",
+        "start": "node chillerbot-api-srv.js",
         "seed": "node src/seed.js"
     },
     "keywords": [],

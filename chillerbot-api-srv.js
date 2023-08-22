@@ -4,7 +4,7 @@ const cron = require('node-cron')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const { insertPlaytime } = require('./src/database')
+const { insertPlaytime, getPlaytime } = require('./src/database')
 const logger = require('./src/logger')
 
 const port = 9812
@@ -128,6 +128,13 @@ app.get('/api/v1/beat/:id/:client/:name', (req, res) => {
 app.get('/api/v1/users', (req, res) => {
   res.end(JSON.stringify(
     Object.keys(onlineClients).map(id => onlineClients[id].username)
+  ))
+})
+
+app.get('/api/v1/playtime/:id', (req, res) => {
+  const clientId = decodeURIComponent(req.params.id)
+  res.end(JSON.stringify(
+    getPlaytime(clientId)
   ))
 })
 

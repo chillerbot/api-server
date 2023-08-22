@@ -25,9 +25,15 @@ const insertPlaytime = (key, username, ip, minutes) => {
   )
 }
 
+const getPlaytime = (key) => {
+  const row = db.prepare('SELECT sum(minutes) AS playtime FROM Playtime WHERE key = ?').get(key)
+  return row.playtime
+}
+
 const getDb = () => db
 
 module.exports = {
   insertPlaytime,
+  getPlaytime,
   getDb
 }
