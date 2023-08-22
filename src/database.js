@@ -1,5 +1,4 @@
-const sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database('./db/main.db')
+const db = require('better-sqlite3')('./db/main.db')
 
 const dbQuery = `
 CREATE TABLE IF NOT EXISTS Playtime(
@@ -10,23 +9,20 @@ CREATE TABLE IF NOT EXISTS Playtime(
   minutes INTEGER
 )`
 
-db.run(dbQuery)
+db.exec(dbQuery)
 
 const insertPlaytime = (key, username, ip, minutes) => {
   const insertQuery = `INSERT INTO Playtime(
     key, username, ip, minutes
   ) VALUES (?, ?, ?, ?);
   `
-  db.run(insertQuery,
+  const stmt = db.prepare(insertQuery)
+  stmt.run(
     key,
     username,
     ip,
-    minutes,
-    (err) => {
-      if (err) {
-        throw err
-      }
-    })
+    minutes
+  )
 }
 
 const getDb = () => db
