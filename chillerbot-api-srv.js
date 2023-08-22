@@ -56,8 +56,7 @@ cron.schedule('* * * * *', () => {
   }
 })
 
-cron.schedule('0 * * * *', () => {
-  // do hourly saves in case the server restarts or crashes
+const saveCurrentPlaytimes = () => {
   for (const clientId in onlineClients) {
     const client = onlineClients[clientId]
     const seenSecsAgo = (new Date() - client.lastSeen) / 1000
@@ -70,6 +69,11 @@ cron.schedule('0 * * * *', () => {
       onlineClients[clientId].firstSeen = new Date()
     }
   }
+}
+
+cron.schedule('0 * * * *', () => {
+  // do hourly saves in case the server restarts or crashes
+  saveCurrentPlaytimes()
 })
 
 app.get('/', (req, res) => {
@@ -122,7 +126,9 @@ app.get('/api/v1/beat/:id/:client/:name', (req, res) => {
     onlineClients[clientId].username = name
     onlineClients[clientId].lastSeen = new Date()
   }
-  res.end('{}')
+  res.end(JSON.stringify(
+    getPlaytime(clientId)
+  ))
 })
 
 app.get('/api/v1/users', (req, res) => {
@@ -139,6 +145,12 @@ app.get('/api/v1/playtime/:id', (req, res) => {
 })
 
 app.use(express.static('static'))
+
+process.on("SIGINT", () => {
+  console.log('[*] Got shutdown. Saving current playtimes ...')
+  saveCurrentPlaytimes()
+  process.exit()
+})
 
 app.listen(port, () => {
   logger.log('server', `App running on http://localhost:${port}.`)
