@@ -127,7 +127,7 @@ app.get('/api/v1/beat/:id/:client/:name', (req, res) => {
     onlineClients[clientId].lastSeen = new Date()
   }
   res.end(JSON.stringify(
-    getPlaytime(clientId)
+    getPlaytime(clientId) || 0
   ))
 })
 
