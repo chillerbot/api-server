@@ -78,8 +78,6 @@ cron.schedule('0 * * * *', () => {
 
 const getIpAddr = (req) => {
   const forwarded = req.headers['x-forwarded-for']
-  console.log(forwarded)
-  console.log(typeof forwarded)
   if (typeof forwarded === 'object') {
     return forwarded.pop()
   } else if (typeof forwarded === 'string') {
