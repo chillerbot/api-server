@@ -76,8 +76,20 @@ cron.schedule('0 * * * *', () => {
   saveCurrentPlaytimes()
 })
 
+const getIpAddr = (req) => {
+  const forwarded = req.headers['x-forwarded-for']
+  console.log(forwarded)
+  console.log(typeof forwarded)
+  if (typeof forwarded === 'object') {
+    return forwarded.pop()
+  } else if (typeof forwarded === 'string') {
+    return forwarded.split(',').pop()
+  }
+  return req.socket.remoteAddress
+}
+
 app.get('/', (req, res) => {
-  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  const reqAddr = getIpAddr(req)
   logger.log('server', `GET / ${reqAddr}`)
   res.end('OK')
 })
@@ -88,7 +100,7 @@ app.set('trust proxy', true)
 
 app.post('/', (req, res) => {
   // const reqHost = `${req.protocol}://${req.header('Host')}`
-  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  const reqAddr = getIpAddr(req)
   // const isOwnAddr = reqAddr === process.env.IP_ADDR
   // if (reqHost !== process.env.CAPTCHA_BACKEND && !isOwnAddr) {
   //   logger.log('captcha', `blocked post from invalid host='${reqHost}' addr='${reqAddr}' expected='${process.env.CAPTCHA_BACKEND}'`)
@@ -111,7 +123,7 @@ app.get('/api/v1/beat/:id/:client/:name', (req, res) => {
   const clientId = decodeURIComponent(req.params.id)
   const name = decodeURIComponent(req.params.name)
   const client = decodeURIComponent(req.params.client)
-  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  const reqAddr = getIpAddr(req)
   logger.log('server', `GET /api/v1/beat/${clientId}/${client}/${name} ${reqAddr}`)
   if (!onlineClients[clientId]) {
     logger.log('server', `username='${name}' joined the game (client=${client})`)
