@@ -3,4 +3,4 @@ node_modules/
 .rdb
 *.db
 db/*.sql
-logs/*.txt
+logs/*
